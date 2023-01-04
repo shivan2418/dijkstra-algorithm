@@ -1,0 +1,9 @@
+@tailwind components;
+@tailwind utilities;
+
+
+.square {
+    @apply w-8 h-8;
+    @apply bg-blue-200;
+    @apply border-2 border-blue-400;
+}
