@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 export default class Node {
     up?: Node;
     down?: Node;
@@ -7,7 +9,34 @@ export default class Node {
     start:boolean = false;
     end:boolean = false;
 
+    visited:boolean = false;
+
+    distance_from_start:number = Infinity;
+    previous_node?:Node;
+
+    toString():string {
+        return `(${this.x},${this.y})`;
+    }
+
     constructor(public x:number, public y:number, public cost:number) {
+    }
+
+    get_distance_to_previous(previous:Node){
+
+        let cost = previous.cost + this.cost;
+        return cost;
+    }
+
+    get_distance_from_start(arrived_via?:Node):number {
+
+        let cost = this.cost;
+        let previous = this.previous_node || arrived_via as Node;
+
+        while (!previous!.start) {
+            cost += previous!.cost;
+            previous = previous!.previous_node!;
+        }
+        return cost;
     }
 
     get_neighbors():Node[] {
@@ -19,7 +48,30 @@ export default class Node {
         return neighbors;
     }
 
+    get_unvisited_neighbors():Node[] {
+        let neighbors = this.get_neighbors();
+        return neighbors.filter( (neighbor) => !neighbor.visited );
+    }
 
+    static get_optimal_path(nodes:Node[]){
+        let end_node = _.find(nodes, {end:true});
+        let path:Node[] = [];
+        let current_node = end_node;
+        while (!current_node!.start) {
+            path.push(current_node!);
+            current_node = current_node!.previous_node;
+        }
+        path.push(current_node!);
+        return path;
+    }
+
+
+    static get_next_node_to_visit(nodes:Node[]):Node|undefined {
+
+        nodes = nodes.filter( (node) => !node.visited );
+        nodes = nodes.sort( (a,b) => a.distance_from_start - b.distance_from_start );
+        return _.first(nodes);
+    }
 
     get_up(nodes:Node[]):Node|undefined {
         return _find_node(this.x,this.y-1,nodes);
